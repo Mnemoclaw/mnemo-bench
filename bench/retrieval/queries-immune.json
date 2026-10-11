@@ -1,0 +1,108 @@
+{
+  "version": "2.0.0",
+  "description": "mnemo-bench retrieval queries — 20 queries, vocabulaire volontairement différent des patterns stockés (test de matching sémantique réel). Chaque query porte un lexicon (termes normalisés, sans accents) utilisé UNIQUEMENT pour la construction des qrels par pooling. Ne jamais modifier après freeze (sha256 consigné dans prereg/prereg.yaml).",
+  "created": "2026-05-29",
+  "frozen_for_mnemo_bench": "2026-10-11",
+  "queries": [
+    {
+      "id": "BQ-001", "domain": "docker", "expected_category": "path_conversion_windows_docker",
+      "query": "mon container docker crash au demarrage avec MODULE_NOT_FOUND quand jutilise docker exec",
+      "lexicon": ["module_not_found", "git bash", "msys", "path conversion", "docker exec", "c:/", "/usr/src", "winpty"]
+    },
+    {
+      "id": "BQ-002", "domain": "docker", "expected_category": "docker_resource_limits",
+      "query": "Docker Compose container eats all RAM and other services get killed",
+      "lexicon": ["mem_limit", "memory limit", "cpus", "oom", "resource limit", "deploy resources", "compose"]
+    },
+    {
+      "id": "BQ-003", "domain": "docker", "expected_category": "frame_count_mismatch_video",
+      "query": "video render outputs wrong length last scene cut short or black screen",
+      "lexicon": ["durationinframes", "frame count", "fps", "render duration", "scene", "black screen", "frames"]
+    },
+    {
+      "id": "BQ-004", "domain": "docker", "expected_category": "stale_cache_rendering_pipeline",
+      "query": "ancien audio qui revient dans le render meme apres avoir supprime le cache",
+      "lexicon": ["stale cache", "cache invalidate", "public dir", "old audio", "regenerate", "static asset"]
+    },
+    {
+      "id": "BQ-005", "domain": "security", "expected_category": "exec_command_injection",
+      "query": "how to prevent command injection when passing AI-generated text to shell",
+      "lexicon": ["execsync", "spawnsync", "shell injection", "command injection", "shell:true", "escape", "quoting"]
+    },
+    {
+      "id": "BQ-006", "domain": "security", "expected_category": "credential_file_location",
+      "query": "mot de passe SMTP qui nest pas accessible dans le script wrapper",
+      "lexicon": ["smtp", "password", "credential", ".api-keys", ".env", "wrapper", "passphrase"]
+    },
+    {
+      "id": "BQ-007", "domain": "security", "expected_category": "xss_template_injection",
+      "query": "user input rendered in HTML template without escaping",
+      "lexicon": ["xss", "escaping", "html template", "sanitize", "template injection", "innerhtml", "ssti"]
+    },
+    {
+      "id": "BQ-008", "domain": "security", "expected_category": "hardcoded_secrets_exposure",
+      "query": "tokens API visibles dans le code source ou lhistorique git",
+      "lexicon": ["hardcoded", "api key", "git history", "secret", "rotate", "revoke", "token exposure"]
+    },
+    {
+      "id": "BQ-009", "domain": "nodejs", "expected_category": "middleware_ordering",
+      "query": "Express middleware order causing auth to run after rate limiter",
+      "lexicon": ["middleware", "express", "app.use", "rate limiter", "ordering", "auth before"]
+    },
+    {
+      "id": "BQ-010", "domain": "nodejs", "expected_category": "unhandled_promise_db_failure",
+      "query": "async function returns undefined instead of throwing when database connection drops",
+      "lexicon": ["async", "await", "unhandled rejection", "throw", "undefined return", "database connection"]
+    },
+    {
+      "id": "BQ-011", "domain": "nodejs", "expected_category": "ssl_certificate_validation_disabled",
+      "query": "mon API Node fait des appels exterieurs sans verifier le certificat SSL",
+      "lexicon": ["rejectunauthorized", "ssl", "tls", "certificate", "self-signed", "https agent"]
+    },
+    {
+      "id": "BQ-012", "domain": "database", "expected_category": "sql_join_duplicate_rows",
+      "query": "requete SQL qui ramene des doublons a cause dun JOIN mal fait",
+      "lexicon": ["join", "duplicate rows", "distinct", "group by", "one-to-many", "row multiplication"]
+    },
+    {
+      "id": "BQ-013", "domain": "database", "expected_category": "schema_migration_column_drop",
+      "query": "database migration dropped a column that was still referenced by application code",
+      "lexicon": ["migration", "drop column", "schema", "alter table", "rollback", "breaking change"]
+    },
+    {
+      "id": "BQ-014", "domain": "devops", "expected_category": "service_startup_order_healthcheck",
+      "query": "deploiement en production sans healthcheck les services demarrent dans le desordre",
+      "lexicon": ["healthcheck", "startup order", "depends_on", "readiness", "orchestration", "boot order"]
+    },
+    {
+      "id": "BQ-015", "domain": "devops", "expected_category": "slow_container_startup_delay",
+      "query": "Docker gateway takes too long to start and dependent services fail on boot",
+      "lexicon": ["start_period", "startup timeout", "slow start", "dependent service", "retry boot", "long startup"]
+    },
+    {
+      "id": "BQ-016", "domain": "fitness", "expected_category": "squat_plateau_programming",
+      "query": "comment progresser sur squat quand on est bloque a 100kg depuis 3 semaines",
+      "lexicon": ["squat", "plateau", "deload", "periodization", "1rm", "linear progression", "sticking point"]
+    },
+    {
+      "id": "BQ-017", "domain": "fitness", "expected_category": "hypertrophy_training_split",
+      "query": "programme hypertrophy upper lower 4 jours par semaine avec progression lineaire",
+      "lexicon": ["hypertrophy", "upper lower", "training split", "volume", "frequency", "progressive overload"]
+    },
+    {
+      "id": "BQ-018", "domain": "writing", "expected_category": "paragraph_structure_seo_writing",
+      "query": "blog article paragraphs are too long and lack structure for SEO",
+      "lexicon": ["paragraph", "subheading", "seo", "readability", "scannable", "wall of text"]
+    },
+    {
+      "id": "BQ-019", "domain": "tts", "expected_category": "tts_artifact_audio_glitch",
+      "query": "le texte synthetise en audio a des artefacts et des sauts bizarres entre les phrases",
+      "lexicon": ["tts", "audio artifact", "glitch", "phoneme", "prosody", "concatenate audio", "silence gap"]
+    },
+    {
+      "id": "BQ-020", "domain": "writing", "expected_category": "translation_quality_repetitive_phrasing",
+      "query": "traduction FR qui sonne robotique et repete toujours les memes formules",
+      "lexicon": ["translation", "robotic", "repetitive", "idiomatic", "literal translation", "phrasing variety"]
+    }
+  ]
+}

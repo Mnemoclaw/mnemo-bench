@@ -1,0 +1,53 @@
+# mnemo-bench — campagnes comportementales (LLM requis), TOUJOURS manuelles.
+# Deux exécutions possibles :
+#   1. self-hosted (machine locale) : qwen local + daemon embed, 0 token cloud
+#   2. cloud (workflow_dispatch avec input) : endpoints payants via secrets — coût maîtrisé
+name: campaign
+on:
+  workflow_dispatch:
+    inputs:
+      bench:
+        description: 'Quel bench lancer'
+        required: true
+        default: chimera-structural
+        type: choice
+        options: [chimera-structural, chimera-behavioral, retrieval-real]
+      runner:
+        description: 'Où exécuter'
+        required: true
+        default: self-hosted
+        type: choice
+        options: [self-hosted, ubuntu-latest]
+
+jobs:
+  run:
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Vérifier endpoints locaux (self-hosted uniquement)
+        if: inputs.runner == 'self-hosted'
+        run: |
+          curl -sf -m 5 http://127.0.0.1:11434/v1/models > /dev/null || { echo "::error::qwen local DOWN (11434)"; exit 1; }
+          curl -sf -m 5 http://127.0.0.1:8091/health > /dev/null || echo "::warning::daemon embed DOWN (8091) — systèmes sémantiques ignorés"
+
+      - name: chimera-structural (validation des contrats sur sorties live)
+        if: inputs.bench == 'chimera-structural'
+        run: node bench/chimera/run-chimera.mjs --mode structural
+
+      - name: chimera-behavioral (bras + juge aveugle qwen local — campagens gated)
+        if: inputs.bench == 'chimera-behavioral'
+        run: node bench/chimera/run-chimera.mjs --mode behavioral --seeds 5
+        env:
+          QWEN_BASE_URL: http://127.0.0.1:11434/v1
+
+      - name: retrieval-real (corpus privé local + qrels figées)
+        if: inputs.bench == 'retrieval-real'
+        run: node bench/retrieval/run-retrieval.mjs --corpus real --qrels results/qrels-immune-adjudicated.tsv
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: campaign-${{ inputs.bench }}-${{ github.run_id }}
+          path: results/

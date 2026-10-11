@@ -1,0 +1,14 @@
+# Données privées & résultats locaux — jamais commités
+results/
+
+# Corpus de production (privé, jamais commités)
+immune_memory.json
+cheatsheet_memory.json
+*.sqlite
+*.sqlite.lock
+
+# OS / éditeurs
+Thumbs.db
+.DS_Store
+audit/
+patches/

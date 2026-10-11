@@ -1,0 +1,72 @@
+# ============================================================
+# mnemo-bench — protocole PRÉ-ENREGISTRÉ (figé avant analyse)
+# ============================================================
+# Toute divergence constatée lors de l'analyse sera signalée dans le rapport final.
+# Ce fichier est le contrat : hypothèses, α, corrections, tests — figés AVANT les runs.
+version: 1.0.0
+frozen: "2026-10-11"
+artifact_hashes: results/manifest.json   # sha256 remplis par scripts/hash-artifacts.mjs
+
+# ---------- Généralités ----------
+alpha: 0.05
+correction_multiplicite: Holm-Bonferroni (familles = une hypothèse × ses systèmes/modèles)
+determinisme: PRNG xorshift32 seedé (0x9E3779B9 / 0x2545F491) — aucunMath.random
+politique_donnees:
+  corpus_reel: PRIVÉ (jamais commité — immune_memory.json, cheatsheet_memory.json)
+  corpus_fixture: synthétique, commité, CI-safe
+  raw_outputs: archivés en artifacts CI, jamais commités
+
+# ---------- Brique Immune : retrieval (déterministe) ----------
+retrieval:
+  queries: bench/retrieval/queries-immune.json (20 queries, vocab décalé — figées)
+  corpus_reel: 498 anticorps + 269 stratégies (production)
+  qrels:
+    methode: pooling top-20 par système (bm25, embed) + double jugement
+    juge_1: lexicon (≥2 termes = 2, 1 terme = 1, 0 sinon)
+    juge_2: qwen3.8-27B local, temp 0, enable_thinking=false, rubric stricte 0/1/2
+    fusion: conservatrice — 2 si les DEUX juges = 2, 0 si les DEUX = 0, sinon 1
+    fiabilite: κ de Cohen(juge_1, juge_2) rapporté ; κ < 0.6 ⇒ qrels signalées "à revoir"
+    biais_declare: pooling (docs hors pool réputés non pertinents)
+  systemes: [bm25, embed-daemon, rrf-k60, rrf-ce]
+  metriques: [recall@5, recall@10, mrr@10, ndcg@10, p@5]
+  inference:
+    - moyenne par métrique + IC 95 % bootstrap par query (10 000 rééch., graine fixe)
+    - deltas appariés inter-systèmes + Wilcoxon signed-rank bilatéral
+  hypotheses:
+    - "H-R1: embed > bm25 sur recall@10 (transfert sémantique, vocab décalé)"
+    - "H-R2: rrf ≥ max(bm25, embed) sur recall@10 (la fusion hybride ne dégrade pas)"
+    - "H-R3: rrf-ce ≥ rrf sur nDCG@10 (le re-rank cross-encoder améliore l'ordre)"
+
+# ---------- Briques Chimera : structurel (déterministe) ----------
+chimera_structurel:
+  contrats:
+    slime_expand: arbre JSON, branches ≤ 8, scores ∈ [0,1], sub_options non vides
+    slime_prune: 3-5 survivantes, ⊆ expansion (aucune invention), 0 doublon, scores préservés
+    prism_distinctness: distance moyenne inter-perspectives ≥ 0.5 (jaccard CI / cosinus local)
+    prism_fusion: pas de copie d'une source, pas de résumé « Perspective N said »,
+      nouveauté trigram ∈ [0.1, 0.9] (warning hors bornes), longueur plausible
+  hypotheses:
+    - "H-S1: 100 % des sorties de pipeline respectent les 4 contrats (gate)"
+    - "H-S2: distinctness des perspectives ≥ 0.5 sur les domaines preset"
+
+# ---------- Briques Chimera + Immune : comportemental (gated, LLM requis) ----------
+comportemental:
+  endpoint_principal: qwen3.8-27B local http://127.0.0.1:11434/v1 (0 token cloud)
+  endpoints_confirmatoires: cloud UNIQUEMENT sur dispatch explicite (secrets)
+  design:
+    bras: [baseline-single-shot, chimera-full, chimera-no-slime, chimera-no-prism]
+    taches: 6 tâches × 3 domaines (code, fitness, writing), prompts figés dans le run
+    seeds: 5 minimum par cellule, temperature 0.2, max_tokens 16384, streaming SSE
+  jugement:
+    juge: qwen local, rubrique 1-5 (structure, contraintes, complétude), aveugle au bras
+    accord: κ de Cohen juge-LLM × juge-second sur 20 % échantillon
+  hypotheses:
+    - "H-C1: chimera-full > baseline sur score juge (Wilcoxon apparié par tâche×seed)"
+    - "H-C2: chimera-no-slime < chimera-full (l'expansion large contribue)"
+    - "H-C3: chimera-no-prism < chimera-full (la multiplicité de perspectives contribue)"
+  arret: à complétion de la matrice, analyse unique finale (aucun peek intermédiaire)
+
+# ---------- Référence cross-brique ----------
+immune_double_aveugle:
+  statut: benchmark mature séparé (mc-double-blind-bench) — PREREG v2026-08-29
+  lien: hypotheses H1-H7, 9 modèles, 30 seeds, Holm — non dupliqué ici

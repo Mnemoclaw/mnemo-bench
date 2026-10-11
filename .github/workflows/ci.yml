@@ -1,0 +1,35 @@
+# mnemo-bench — gate déterministe : 0 API, 0 GPU requis, < 1 min, zéro dépendance npm.
+name: ci
+on:
+  push: { branches: [main] }
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Moteur statistique (propriétés mathématiques, valeurs connues)
+        run: node lib/test-stats.mjs
+      - name: Validateurs Chimera (contrats Slime Mold / PRISM, fixtures)
+        run: node bench/chimera/test-validators.mjs
+      - name: Benchmark retrieval fixture (méthodologie IR complète, 0 réseau)
+        run: node bench/retrieval/run-retrieval.mjs --corpus fixture --tag ci
+      - name: Contrôle de cohérence fixture (baseline lexicale doit discriminer ≥ 80 % recall@10)
+        run: |
+          LATEST=$(ls -td results/retrieval-ci-* | head -1)
+          node -e "
+          const j = require('./' + process.argv[1] + '/metrics.json');
+          const r = j.systems.bm25['recall@10'].mean;
+          console.log('bm25 fixture recall@10 =', (r*100).toFixed(1) + '%');
+          if (r < 0.8) { console.error('ÉCHEC : baseline lexicale < 80 % sur fixture — méthode ou fixture cassée'); process.exit(1); }
+          " "$LATEST"
+      - name: Manifeste d'intégrité (sha256 artefacts)
+        run: node scripts/hash-artifacts.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-report
+          path: results/
