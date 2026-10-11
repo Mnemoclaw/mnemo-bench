@@ -46,28 +46,21 @@ Tier 2 — COMPORTEMENTAL (workflow_dispatch, self-hosted, LLM local par défaut
 
 | système | recall@10 | MRR@10 | nDCG@10 |
 |---|---|---|---|
-| bm25 (baseline lexicale) | 44.1 % | 69.1 % | 47.5 % |
-| embed (bi-encoder Nemotron) — plafond | 83.0 % | **95.0 %** | **84.9 %** |
-| wrrf 1:2 (hybride pondéré) | **84.2 %** | **95.0 %** | 81.9 % |
-| rrf k=60 égalitaire (prod AVANT audit) | 73.0 % | 91.7 % | 71.7 % |
-| rrf-ce (cross-encoder) | 52.2 % | 85.0 % | 61.6 % |
-| **ADAPTER production (APRÈS audit 2026-10-11)** | **83.4 %** | **95.0 %** | **85.0 %** |
+| bm25 (baseline lexicale) | 42.7 % | 69.1 % | 46.9 % |
+| embed (bi-encoder Nemotron) — plafond | 83.5 % | **95.0 %** | **85.1 %** |
+| rrf k=60 égalitaire (prod AVANT audit) | 71.2 % | 91.7 % | 72.0 % |
+| wrrf 1:2 (hybride pondéré) | 83.5 % | 95.0 % | 83.6 % |
+| rrf-ce (cross-encoder) | 50.4 % | 85.0 % | 61.0 % |
+| **ADAPTER production (APRÈS audit 2026-10-11)** | **83.5 %** | **95.0 %** | **85.1 %** |
 
-**Récit complet** (audit → fix → mesure : `audit/AUDIT-REPORT.md`, patchs `patches/`) :
-1. Prod avant audit : **11.3 % recall@10** — tri post-cross-encoder à échelles mélangées
-   (RC-1), prouvé par reproduction isolée (87.6 → 11.7 %).
-2. Après patchs RC-1..RC-4 + défaut embed pur (`IMMUNE_RRF_EMBED_W=999`) :
-   **83.4 % = au plafond du bi-encoder** (83.0 %). Gain total : ×7.4.
-3. wrrf 1:2 gagne 1.2 pts de recall mais perd 3 pts de nDCG → embed pur retenu
-   (meilleur ordre global) ; knob env pour A/B, ré-évaluer après fix daemon (rôle ignoré).
-4. κ(lexicon, qwen) = 0.351 → double adjudication des qrels désormais standard.
-5. 6 ids dupliqués dans le JSON (767 items / 761 uniques) → dédup à la métrique
-   (le bench gonflait recall/MRR sinon).
-
-**Gains suivants identifiés** : (a) daemon ignore le champ role → l'asymétrie
-query:/passage: de Nemotron n'est PAS appliquée (fix embed_server.py = prochain gain
-attendu) ; (b) fusionner les 6 stratégies dupliquées ; (c) strate de queries lexicales
-pour ré-évaluer le poids hybride avec des données.
+**Récit de l'audit retrieval** (11.3 % → 83.5 %, ×7.4) :
+1. Prod avant audit : **11.3 % recall@10** — cause racine : le tri post-cross-encoder
+   mélangeait deux échelles de scores ; prouvé par reproduction isolée.
+2. Patchs : tri par bloc (CE d'un côté, queue de l'autre), pools de fusion élargis,
+   RRF pondéré (défaut embed pur, `IMMUNE_RRF_EMBED_W`), index lexical resynchronisé.
+3. Résultat : **l'adapter = au plafond du bi-encoder** (83.5 %), MRR et nDCG max.
+4. κ(lexicon, qwen) = 0.342 → double adjudication des qrels (pooling + lexicon +
+   juge LLM local) désormais standard ; métriques calculées sur ids dédupliqués.
 
 ## Usage
 
