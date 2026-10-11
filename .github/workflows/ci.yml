@@ -1,7 +1,7 @@
 # mnemo-bench — gate déterministe : 0 API, 0 GPU requis, < 1 min, zéro dépendance npm.
 name: ci
 on:
-  push: { branches: [main] }
+  push: { branches: [main, master] }
   pull_request:
   workflow_dispatch:
 
